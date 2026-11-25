@@ -82,6 +82,11 @@ scripts/render-pmo.sh --install ~/orca-teams/team.*.config
 
 人の要件は Planner が受け持ち、詳細化・実装計画・分割を **計画 PR 1 本** にまとめる。計画 PR のマージが「要件と計画の承認」になる。
 
+図の列は担い手で、上から下へ進む。橙の枠が人の出番、桃色の縁が Sentinel（セキュリティ担当）の出番、
+点線の緑が Orca ワーカー（bot が起動する使い捨ての作業者）。
+
+![要件 1 件の流れ。要件の issue から Intake、Planner の調査、Sentinel の脅威分析、計画 PR、Reviewer と Sentinel のレビュー、人のマージ（要件と計画の承認）、子 issue の振り分け、完了報告まで](docs/flow-requirement.svg)
+
 ```text
 人: issue（フォーム「要件・要望」、ラベル requirement）か、Planner とのチャット
   → Intake: bot:planner を付けて Planner へ
@@ -102,6 +107,11 @@ scripts/render-pmo.sh --install ~/orca-teams/team.*.config
 - E 番号は Conductor が着手するときに振る。子 issue は仮 ID `R-<要件の番号>-<a, b…>`。
 - 計画 PR のマージは GitHub のイベントで Planner を起こす。取りこぼしは見回りが拾う（計画 PR がマージ済みで子が無い要件、子がすべて閉じた要件）。
 - 要件書の雛形は `shared/requirement-template.md`（`render.sh` が `<REQ_DIR>/0000-template.md` として置く。`REQ_DIR` の既定は `docs/requirements`）。
+
+子 issue のうちエピックは、Conductor の Run で PR 1 本になる。仕様のあとは必ずテスト設計 → テスト実装（RED）→ 機能実装（GREEN）→
+リファクタリング（REFACTOR）の順で、各段は Conductor が確かめてから次へ進む。マージは、最新のコミットで Reviewer と Sentinel の両方が通ってから。
+
+![エピック 1 件の流れ。子 issue から Conductor の仕様化、Sentinel の設計レビュー、条件つきの人の設計承認、テスト設計・RED・GREEN・統合・REFACTOR とそれぞれの確認、クロスレビュー、PR、Reviewer と修正の往復、Sentinel のマージ前のレビュー、人のマージ、片付けまで](docs/flow-epic.svg)
 
 詳しい根拠は `VERIFY.md` の「稼働 1 日目で分かったこと」。
 

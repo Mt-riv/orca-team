@@ -1,0 +1,117 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 1088" width="960" height="1088" role="img" aria-labelledby="flow-requirement-t flow-requirement-d">
+<title id="flow-requirement-t">要件 1 件の流れ</title>
+<desc id="flow-requirement-d">要件の issue から、Intake の見回り、Planner の引き受けと調査ワーカー、Sentinel の脅威分析、Planner が分割と論点を決め、計画ワーカーが計画 PR を作り、Reviewer と Sentinel のマージ前のレビュー、人のマージ（要件と計画の承認）、Planner が子 issue を立てて Intake が担当へ振り、子がすべて閉じたら Planner が完了報告を書くまでの流れ</desc>
+<style>
+.lane { font: 700 14px 'Hiragino Maru Gothic ProN', 'Hiragino Sans', 'Yu Gothic', 'Noto Sans JP', 'Noto Sans CJK JP', Meiryo, sans-serif; fill: #B7C0D8; }
+.title { font: 700 14px 'Hiragino Maru Gothic ProN', 'Hiragino Sans', 'Yu Gothic', 'Noto Sans JP', 'Noto Sans CJK JP', Meiryo, sans-serif; fill: #FFFFF0; }
+.sub { font: 400 11.5px 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Yu Gothic', 'Noto Sans JP', 'Noto Sans CJK JP', Meiryo, sans-serif; fill: #B7C0D8; }
+.edge { font: 500 11px 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Yu Gothic', 'Noto Sans JP', 'Noto Sans CJK JP', Meiryo, sans-serif; fill: #B7C0D8; }
+.tag { font: 700 10px 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Yu Gothic', 'Noto Sans JP', 'Noto Sans CJK JP', Meiryo, sans-serif; fill: #181F33; letter-spacing: .06em; }
+</style>
+<defs><marker id="flow-requirement-mist" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#B7C0D8"/></marker><marker id="flow-requirement-moon" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#FFC87C"/></marker><marker id="flow-requirement-tiger" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#E9A0C8"/></marker></defs>
+<rect x="0" y="0" width="960" height="1088" rx="18" fill="#232B44"/>
+<rect x="24" y="8" width="222" height="1072" rx="14" fill="rgba(255,200,124,.07)"/>
+<text x="135" y="38" class="lane" text-anchor="middle">人</text>
+<rect x="254" y="8" width="222" height="1072" rx="14" fill="rgba(106,123,162,.11)"/>
+<text x="365" y="38" class="lane" text-anchor="middle">bot</text>
+<rect x="484" y="8" width="222" height="1072" rx="14" fill="rgba(156,201,180,.06)"/>
+<text x="595" y="38" class="lane" text-anchor="middle">Orca ワーカー</text>
+<rect x="714" y="8" width="222" height="1072" rx="14" fill="rgba(138,147,168,.06)"/>
+<text x="825" y="38" class="lane" text-anchor="middle">GitHub</text>
+<path d="M736,94 H365 V135" fill="none" stroke="#B7C0D8" stroke-width="1.6" marker-end="url(#flow-requirement-mist)" opacity="0.9"/>
+<text x="550.5" y="87" class="edge" text-anchor="middle">1 時間以内（急ぐならメンション）</text>
+<path d="M365,185 V201" fill="none" stroke="#B7C0D8" stroke-width="1.6" marker-end="url(#flow-requirement-mist)" opacity="0.9"/>
+<text x="266" y="197" class="edge" text-anchor="end">@</text>
+<path d="M454,226 H595 V267" fill="none" stroke="#B7C0D8" stroke-width="1.6" marker-end="url(#flow-requirement-mist)" opacity="0.9"/>
+<text x="524.5" y="219" class="edge" text-anchor="middle">起動</text>
+<path d="M506,292 H365 V333" fill="none" stroke="#B7C0D8" stroke-width="1.6" marker-end="url(#flow-requirement-mist)" opacity="0.9"/>
+<text x="435.5" y="285" class="edge" text-anchor="middle">調べた事実</text>
+<path d="M365,383 V399" fill="none" stroke="#E9A0C8" stroke-width="1.6" marker-end="url(#flow-requirement-tiger)" opacity="0.9"/>
+<text x="266" y="395" class="edge" text-anchor="end">issue に分析・@</text>
+<path d="M454,424 H595 V465" fill="none" stroke="#B7C0D8" stroke-width="1.6" marker-end="url(#flow-requirement-mist)" opacity="0.9"/>
+<text x="524.5" y="417" class="edge" text-anchor="middle">決めた中身を渡す</text>
+<path d="M684,490 H825 V531" fill="none" stroke="#B7C0D8" stroke-width="1.6" marker-end="url(#flow-requirement-mist)" opacity="0.9"/>
+<text x="754.5" y="483" class="edge" text-anchor="middle">docs(R-n)・PR</text>
+<path d="M736,556 H365 V597" fill="none" stroke="#B7C0D8" stroke-width="1.6" marker-end="url(#flow-requirement-mist)" opacity="0.9"/>
+<text x="550.5" y="549" class="edge" text-anchor="middle">@</text>
+<path d="M365,647 V663" fill="none" stroke="#B7C0D8" stroke-width="1.6" marker-end="url(#flow-requirement-mist)" opacity="0.9"/>
+<text x="266" y="659" class="edge" text-anchor="end">直すべき点なし</text>
+<path d="M276,688 H135 V729" fill="none" stroke="#FFC87C" stroke-width="1.6" marker-end="url(#flow-requirement-moon)" opacity="0.9"/>
+<text x="205.5" y="681" class="edge" text-anchor="middle">マージを依頼</text>
+<path d="M224,754 H365 V795" fill="none" stroke="#B7C0D8" stroke-width="1.6" marker-end="url(#flow-requirement-mist)" opacity="0.9"/>
+<text x="294.5" y="747" class="edge" text-anchor="middle">マージ（pr_merged）</text>
+<path d="M454,820 H825 V861" fill="none" stroke="#B7C0D8" stroke-width="1.6" marker-end="url(#flow-requirement-mist)" opacity="0.9"/>
+<text x="639.5" y="813" class="edge" text-anchor="middle">分割の表どおり</text>
+<path d="M736,886 H365 V927" fill="none" stroke="#B7C0D8" stroke-width="1.6" marker-end="url(#flow-requirement-mist)" opacity="0.9"/>
+<text x="550.5" y="879" class="edge" text-anchor="middle">@</text>
+<path d="M365,977 V993" fill="none" stroke="#B7C0D8" stroke-width="1.6" marker-end="url(#flow-requirement-mist)" opacity="0.9" stroke-dasharray="5 4"/>
+<text x="266" y="989" class="edge" text-anchor="end">各担当が PR → マージ（エピックの図）</text>
+<text x="740" y="166" class="edge" text-anchor="start">人は issue に粗く書けばよい。</text>
+<text x="740" y="183" class="edge" text-anchor="start">受け入れ条件は Planner が詰める。</text>
+<text x="740" y="200" class="edge" text-anchor="start">チャットで Planner に話しても</text>
+<text x="740" y="217" class="edge" text-anchor="start">同じ流れに乗る。</text>
+<text x="740" y="626" class="edge" text-anchor="start">決めきれないことは論点にして</text>
+<text x="740" y="643" class="edge" text-anchor="start">推奨を添える。PR をそのまま</text>
+<text x="740" y="660" class="edge" text-anchor="start">マージすると推奨どおりに決まる。</text>
+<text x="740" y="677" class="edge" text-anchor="start">変えたいときは PR で</text>
+<text x="740" y="694" class="edge" text-anchor="start">@orca-bots planner。</text>
+<text x="50" y="890" class="edge" text-anchor="start">子は PR 1 本の大きさ。</text>
+<text x="50" y="907" class="edge" text-anchor="start">エピック → Conductor</text>
+<text x="50" y="924" class="edge" text-anchor="start">小さな変更 → Fixer</text>
+<text x="50" y="941" class="edge" text-anchor="start">文書 → Doc Keeper</text>
+<text x="50" y="958" class="edge" text-anchor="start">依存が閉じたものから着手。</text>
+<text x="510" y="1012" class="edge" text-anchor="start">子がすべて閉じると</text>
+<text x="510" y="1029" class="edge" text-anchor="start">見回りが拾う。子の PR ごとの</text>
+<text x="510" y="1046" class="edge" text-anchor="start">セキュリティレビューも確かめる。</text>
+<text x="595" y="56" class="edge" text-anchor="middle">Planner が起動</text>
+<rect x="736" y="69" width="178" height="50" rx="12" fill="#181F33" stroke="#8A93A8" stroke-width="1.4"/>
+<text x="825" y="91" class="title" text-anchor="middle">issue</text>
+<text x="825" y="108" class="sub" text-anchor="middle">要件・要望のフォーム</text>
+<rect x="276" y="135" width="178" height="50" rx="12" fill="#2E3A57" stroke="#6A7BA2" stroke-width="1.4"/>
+<text x="365" y="157" class="title" text-anchor="middle">Intake</text>
+<text x="365" y="174" class="sub" text-anchor="middle">見回りで拾う</text>
+<rect x="276" y="201" width="178" height="50" rx="12" fill="#2E3A57" stroke="#6A7BA2" stroke-width="1.4"/>
+<text x="365" y="223" class="title" text-anchor="middle">Planner</text>
+<text x="365" y="240" class="sub" text-anchor="middle">引き受けて調べる</text>
+<rect x="506" y="267" width="178" height="50" rx="12" fill="rgba(156,201,180,.10)" stroke="#9CC9B4" stroke-width="1.4" stroke-dasharray="5 4"/>
+<text x="595" y="289" class="title" text-anchor="middle">調査</text>
+<text x="595" y="306" class="sub" text-anchor="middle">claude・読むだけ</text>
+<rect x="276" y="333" width="178" height="50" rx="12" fill="#2E3A57" stroke="#E9A0C8" stroke-width="2"/>
+<text x="365" y="355" class="title" text-anchor="middle">Sentinel</text>
+<text x="365" y="372" class="sub" text-anchor="middle">脅威分析・AC-S の案</text>
+<rect x="382" y="324" width="66" height="17" rx="8.5" fill="#E9A0C8"/>
+<text x="415" y="336.5" class="tag" text-anchor="middle">要件</text>
+<rect x="276" y="399" width="178" height="50" rx="12" fill="#2E3A57" stroke="#6A7BA2" stroke-width="1.4"/>
+<text x="365" y="421" class="title" text-anchor="middle">Planner</text>
+<text x="365" y="438" class="sub" text-anchor="middle">分割・論点を決める</text>
+<rect x="506" y="465" width="178" height="50" rx="12" fill="rgba(156,201,180,.10)" stroke="#9CC9B4" stroke-width="1.4" stroke-dasharray="5 4"/>
+<text x="595" y="487" class="title" text-anchor="middle">計画</text>
+<text x="595" y="504" class="sub" text-anchor="middle">要件書と仕様書の ID</text>
+<rect x="736" y="531" width="178" height="50" rx="12" fill="#181F33" stroke="#8A93A8" stroke-width="1.4"/>
+<text x="825" y="553" class="title" text-anchor="middle">計画 PR</text>
+<text x="825" y="570" class="sub" text-anchor="middle">[Planner] R-n: …</text>
+<rect x="276" y="597" width="178" height="50" rx="12" fill="#2E3A57" stroke="#6A7BA2" stroke-width="1.4"/>
+<text x="365" y="619" class="title" text-anchor="middle">Reviewer</text>
+<text x="365" y="636" class="sub" text-anchor="middle">計画の整合</text>
+<rect x="276" y="663" width="178" height="50" rx="12" fill="#2E3A57" stroke="#E9A0C8" stroke-width="2"/>
+<text x="365" y="685" class="title" text-anchor="middle">Sentinel</text>
+<text x="365" y="702" class="sub" text-anchor="middle">脅威が入ったか</text>
+<rect x="382" y="654" width="66" height="17" rx="8.5" fill="#E9A0C8"/>
+<text x="415" y="666.5" class="tag" text-anchor="middle">マージ前</text>
+<rect x="46" y="729" width="178" height="50" rx="12" fill="rgba(255,200,124,.16)" stroke="#FFC87C" stroke-width="2"/>
+<text x="60" y="758" class="title" text-anchor="start" fill="#FFC87C">◆</text>
+<text x="80" y="751" class="title" text-anchor="start">計画 PR のマージ</text>
+<text x="80" y="768" class="sub" text-anchor="start">＝要件と計画の承認</text>
+<rect x="276" y="795" width="178" height="50" rx="12" fill="#2E3A57" stroke="#6A7BA2" stroke-width="1.4"/>
+<text x="365" y="817" class="title" text-anchor="middle">Planner</text>
+<text x="365" y="834" class="sub" text-anchor="middle">子 issue を立てる</text>
+<rect x="736" y="861" width="178" height="50" rx="12" fill="#181F33" stroke="#8A93A8" stroke-width="1.4"/>
+<text x="825" y="883" class="title" text-anchor="middle">子 issue ×N</text>
+<text x="825" y="900" class="sub" text-anchor="middle">sub-issue・blocked by</text>
+<rect x="276" y="927" width="178" height="50" rx="12" fill="#2E3A57" stroke="#6A7BA2" stroke-width="1.4"/>
+<text x="365" y="949" class="title" text-anchor="middle">Intake</text>
+<text x="365" y="966" class="sub" text-anchor="middle">担当へ振る</text>
+<rect x="276" y="993" width="178" height="50" rx="12" fill="#2E3A57" stroke="#6A7BA2" stroke-width="1.4"/>
+<text x="365" y="1015" class="title" text-anchor="middle">Planner</text>
+<text x="365" y="1032" class="sub" text-anchor="middle">完了報告して閉じる</text>
+</svg>
