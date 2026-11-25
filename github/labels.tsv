@@ -1,0 +1,14 @@
+{{LABEL_CONDUCTOR}}	5319e7	Conductor に仕様化とタスク分解を任せる
+{{LABEL_FIXER}}	0e8a16	Fixer に再現と原因特定を任せる
+{{LABEL_INCIDENT}}	b60205	動いているものが壊れた・止まった
+flaky	fbca04	たまたま落ちるテスト・check
+bot:doc-keeper	0075ca	Doc Keeper にドキュメントのずれを任せる
+triaged	c5def5	Intake が振り分けた（見回りの印）
+needs-info	d4c5f9	報告者の情報を待っている
+wait:human	e99695	人の判断を待っている（設計の承認・マージ・凍結済みテスト・範囲外）
+P1	b60205	すぐ直す（動いているものが壊れた・秘密が漏れうる）
+P2	fbca04	通常
+P3	c2e0c6	後回しでよい
+security	ee0701	セキュリティの指摘
+requirement	1d76db	人からの新しい要件（Planner が詳細化して計画 PR にする）
+bot:planner	bfd4f2	Planner に要件の詳細化・計画・issue 化を任せる

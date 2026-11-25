@@ -1,0 +1,4 @@
+# 自分の展開先の設定（パス・リポジトリ名が入る）は公開しない。雛形は team.config.example
+team.*.config
+.DS_Store
+__pycache__/

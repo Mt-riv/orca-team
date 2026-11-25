@@ -1,0 +1,58 @@
+# orca-team の設定。KEY=VALUE のみ（シェルが source する）。
+# {{KEY}} の形でテンプレート側から参照される。
+# コピーして team.<project>.config にし、このリポジトリの外（例 ~/orca-teams/）に置く。
+# 中身は自分の環境（パス・リポジトリ名）なので公開しない。リポジトリの中に置いても team.*.config は .gitignore で外してある。
+
+# --- チームの略号（命名規則。README「チームを増やすときの命名規則」）---
+# 同じ Mac で 2 つ目以降のチームを作るときは必須。英小文字と数字だけ。
+# 例 'ml' → bot は ml-reviewer / ml-ci-guardian …、ルームは「ml 開発」「ml 出荷」、メンションは @orca-bots ml-reviewer
+# 空にすると最初のチームの扱い（bot は Reviewer などの表示名、ルームは「開発ルーム」「出荷ルーム」）。
+TEAM_CODE=''
+
+# --- 対象 ---
+TEAM_NAME='<プロジェクト名> 開発チーム'
+REPO='<owner>/<repo>'                     # owner/name
+REPO_PATH='/Users/<you>/dev/<repo>'      # bot を動かすホスト上の絶対パス
+DEFAULT_BRANCH='main'
+# WORKSPACES_DIR=''  # ワーカーの作業場所のフォルダ。空なら ~/orca/workspaces/<REPO_PATH のフォルダ名>
+
+# --- GitHub Project ---
+PROJECT_TITLE='<repo> デリバリー'
+PROJECT_NUMBER=''                         # setup-github.sh が作った番号を後で書き戻す
+PROJECT_URL=''                            # 同上
+
+# --- このリポジトリの作り方（指示文に埋め込まれる） ---
+RULES_DOC='CLAUDE.md'                     # エージェントが従う規約ファイル
+SPEC_DOC='README.md'                      # 製品仕様の正
+PROCESS_DOC='docs/実装計画.md'             # 開発プロセスの正
+CHECK_CMD='npm test'                      # 品質ゲート一括（これが通ることが完了条件）
+TEST_CMD='npm test'                        # テストだけ流すコマンド
+BRANCH_PREFIX='feat/'                     # 機能開発のブランチ接頭辞
+ADR_DIR='docs/adr'                       # ADR（アーキテクチャの決定記録）を置く場所
+REQ_DIR='docs/requirements'              # Planner の要件書（R-<issue>.md）を置く場所。雛形は render.sh が 0000-template.md として置く
+PLAN_BRANCH_PREFIX='plan/R-<issue>-<name>'  # Planner の計画 PR のブランチ（{{RULES_DOC}} の命名に足しておく）
+DEV_PROCESS='仕様化 → テスト設計 → 失敗するテスト（RED）→ 実装（GREEN）→ リファクタリング → レビュー → マージ前のセキュリティレビュー（security-review）'  # 1行で書いた開発の順序
+DEPLOY_KIND='リリースビルドの作成'          # 「デプロイ」が何を指すか（1行）
+
+# --- 運用 ---
+TZ_LABEL='日本時間'
+TIMEZONE='Asia/Tokyo'                    # 定時の解釈に使う IANA タイムゾーン（setup-automations.sh）
+# ルーム名。空にすると命名規則で決まる（TEAM_CODE があれば「<code> 開発」「<code> 出荷」）
+ROOM_DEV=''
+ROOM_SHIP=''
+LABEL_CONDUCTOR='bot:conductor'
+LABEL_FIXER='bot:fixer'
+LABEL_INCIDENT='incident'
+
+# --- bot をどのホストで動かすか（指示文には出ない。SETUP.md の記述に使う） ---
+BOT_HOST='local'                          # local | <orca host 名>
+
+# --- ブランチ保護 ---
+# 1人開発では承認必須にすると詰む（GitHub は PR 作成者の自己承認を認めない。
+# bot の PR もオーナー名義なので、必須承認 1 だとどの PR もマージできなくなる）。
+# 保証の本体は「main への直接 push を塞ぐ」こと。
+# これを入れる前提として、人も bot も「作業ブランチを切って push し、main へは PR」で動くこと。
+# 手元で --no-ff マージして main を push する運用とは両立しない。
+# 保護は enforce_admins: false（管理者には効かない）。bot はオーナー＝管理者名義なので、bot の直接 push は保護では止まらない。
+REQUIRED_APPROVALS=0
+REQUIRED_CHECKS='orca/review,orca/security-review'   # カンマ区切り。CI のジョブも足す（例 'check / build,orca/review,orca/security-review'）。orca/ の 2 つは Reviewer と Sentinel の関門で、外すとレビューを経ないマージを GitHub が止めない。Sentinel を入れる前（SETUP.md の段階 6 より前）は orca/security-review を外しておき、入れたら足して setup-github.sh を流し直す（外さないと、それまでの PR がマージできない）

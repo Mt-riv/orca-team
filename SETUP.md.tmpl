@@ -1,0 +1,467 @@
+# {{TEAM_NAME}} — 手作業セットアップ手順
+
+このファイルは `orca-team` テンプレートから生成されている。直すときはテンプレート側
+（`{{TEMPLATE_DIR}}/SETUP.md.tmpl`）を直して `render.sh` を流し直す。
+
+- 対象リポジトリ: `{{REPO}}`（ホスト上のパス `{{REPO_PATH}}`）
+- bot を置くホスト: `{{BOT_HOST}}`
+- Project: {{PROJECT_URL}}
+- 品質ゲート: `{{CHECK_CMD}}`
+- bot の指示文: このフォルダの `<bot名>.md`
+
+11 体を一度に立ち上げない。読むだけの 3 体（と、まだいなければ PMO）から始め、各段階の「次へ進む条件」を満たしてから進む。
+`[ ]` を潰しながら進める。途中で止めてよい。
+
+---
+
+## 0. 作業の前に覚えておくこと
+
+**このチームの名前。** bot の名前は画面で入れる名前そのもので、フォルダ名・`@` で呼ぶ名前・`--bot` の引数になる。
+同じ Mac の別チームとぶつからないよう、命名規則（テンプレートの `README.md`）で決めてある。チームの略号は {{TEAM_CODE_LABEL}}。
+
+| 役割 | 画面で入れる名前 | GitHub で呼ぶとき |
+| --- | --- | --- |
+| Reviewer | `{{NAME_REVIEWER}}` | `@orca-bots {{P}}reviewer` |
+| CI Guardian | `{{NAME_CI_GUARDIAN}}` | `@orca-bots {{P}}ci-guardian` |
+| Intake | `{{NAME_INTAKE}}` | `@orca-bots {{P}}intake` |
+| Fixer | `{{NAME_FIXER}}` | `@orca-bots {{P}}fixer` |
+| Doc Keeper | `{{NAME_DOC_KEEPER}}` | `@orca-bots {{P}}doc-keeper` |
+| Conductor | `{{NAME_CONDUCTOR}}` | `@orca-bots {{P}}conductor` |
+| Planner | `{{NAME_PLANNER}}` | `@orca-bots {{P}}planner` |
+| Sentinel | `{{NAME_SENTINEL}}` | `@orca-bots {{P}}sentinel` |
+| Release Captain | `{{NAME_RELEASE_CAPTAIN}}` | `@orca-bots {{P}}release-captain` |
+| Ops Scribe | `{{NAME_OPS_SCRIBE}}` | `@orca-bots {{P}}ops-scribe` |
+| PMO | `PMO`（**全チームで 1 体**。既にあれば作らない） | — |
+
+ルームは `{{ROOM_DEV}}` と `{{ROOM_SHIP}}`。bot 同士の受け渡しと自動化はすべて `{{ROOM_DEV}}` で動くので、10 体全員を `{{ROOM_DEV}}` に入れる。
+`{{ROOM_SHIP}}` は人が出荷の相談をする場（Sentinel・Release Captain・Ops Scribe）。
+
+
+**bot のフォルダ名は信用しない。** `~/.orca/bots/<スラッグ>/` のスラッグは**作成時の名前**から付き、
+あとで名前を変えても追従しない（実例: フォルダ `new-bot` の中身は名前「Sebas」の bot）。
+フォルダを引くときは必ず名前で検索する。
+
+```bash
+# 名前から bot のフォルダを引く
+grep -l '"name": "Reviewer"' ~/.orca/bots/*/bot.json | xargs dirname
+# 全部の対応を出す
+for f in ~/.orca/bots/*/bot.json; do echo "$(dirname "$f"): $(grep -o '"name": "[^"]*"' "$f")"; done
+```
+
+**各 bot のフォルダの中身**
+
+| ファイル | 誰が書くか | 役割 |
+| --- | --- | --- |
+| `SOUL.md` | **あなた（ここに指示文を入れる）** | 何者で、何をして、何をしないか |
+| `MEMORY.md` | bot | 1 行 1 事実、新しいものが上 |
+| `bot.json` / `AGENTS.md` / `CLAUDE.md` | Orca | 触らない（上書きされる） |
+
+**指示文の入れ方。** 作成フォームの Identity 欄（Who it is and what it does）は **200 字まで**で、
+指示文の全文は入らない。フォームには `<bot名>.md` の SOUL.md 本文の**最初の段落（役割の 1 文）だけ**を入れて作成し、
+作成直後に `scripts/install-souls.sh` で `SOUL.md` を本文の全文に置き換える。末尾の `## Never` の節も、
+チームの禁止事項（`{{TEMPLATE_DIR}}/bots/_never.md`）に置き換わる。Orca が作成時に入れる既定の Never
+「オーナーが許すまで何も変えない（コメント・ラベル・PR）。読んで報告するだけ」が残ると、
+bot は issue も PR も作らずに「決めてください」で止まる（2026-11-23 の稼働で確認）。
+
+**オートメーション依頼文はチャットに貼らなくてよい。** 自動化は `scripts/setup-automations.sh` が
+`orca automations create --bot` で作る（依頼文は「何をきっかけに何をするか」の記録として残してある）。
+
+**自分で bot に頼むときはメンションする。** bot はあなたとして動くので、**あなた自身が付けたラベル・立てた issue・
+付けたコメントではイベント起動が発火しない**。いちばん早いのは `{{ROOM_DEV}}` に `@<bot の名前> <用件>` と書くこと（例: `@{{NAME_FIXER}} #47 を見て`）。
+GitHub では issue や PR のコメントで `@orca-bots <bot>`（例: `@orca-bots {{P}}fixer`）と書けば、自動化なしで直接その bot に届く。
+issue 起動は協働者が立てたときのためのもの。
+担当ラベル（`{{LABEL_FIXER}}` など）は状態の印で、起動には使わない（Intake の `@` と二重になるため、ラベルの自動化は止めてある）。
+
+**bot 同士は `{{ROOM_DEV}}` の `@名前` で渡す（2026-11-25 から）。** 自動化（定時・見回り・GitHub のイベント）は `{{ROOM_DEV}}` の中で動き、
+依頼文はあなたの書き込みとしてルームに出る。bot は返事の最後に `@<相手> <issue / PR> <してほしいこと>` と書き、Orca が相手をルームで起こす
+（ルームに「<渡した bot> asked <相手>」と出る）。bot もあなたの名義で動くので、bot が立てた issue・付けたラベル・開いた PR では
+イベントは起きない（起きるのはマージ・close・conflict・CI の結果だけ）。Orca のメール（`orca orchestration send --to bot:`）は判定フックが断る。
+あなたが立てた issue は、Intake の毎時の見回りが拾う（メンションしなくても 1 時間以内に振り分けられる）。
+
+| bot | 自分で頼むとき |
+| --- | --- |
+| Intake | `{{ROOM_DEV}}` に `@{{NAME_INTAKE}} #<番号>`、または立てた issue に `@orca-bots {{P}}intake` とコメントする |
+| Fixer | issue に `@orca-bots {{P}}fixer` |
+| Conductor | issue に `@orca-bots {{P}}conductor` |
+| Planner | 新しい要件はフォーム「要件・要望」で issue を立てる（見回りが 1 時間以内に Planner へ渡す）。急ぐときは `@orca-bots {{P}}planner`。チャットで話してもよい |
+| Ops Scribe | インシデントの issue に `@orca-bots {{P}}ops-scribe` |
+| Reviewer | 自分で開いた PR では `pr_opened from=me` で起きる。ただし起きないことがある（理由は不明。テンプレートの VERIFY.md）。起きなければ見回りが 1 時間ほどで拾う。すぐ見直させるときは、数分待って `{{ROOM_DEV}}` に Reviewer の返事が無いことを確かめてから `@{{NAME_REVIEWER}} PR #<番号>`（イベントと二重にしないため） |
+
+---
+
+## 1. Project の画面（残っている手作業）
+
+`setup-github.sh` が Project の作成・リポジトリ連携・フィールド追加・Status の選択肢まで入れてある。
+画面でしかできないのは次の 2 つ。
+
+{{PROJECT_URL}} を開く。
+
+- [ ] **1-1. ボードビューを作る**
+  1. 左上のタブの並びの右端にある `+`（New view）を押す
+  2. レイアウトを **Board** にする
+  3. 列（Column field）を **Status** にする
+  4. ビューの名前を `ボード` にする（タブを右クリック → Rename view）
+  5. 列が Todo / Ready / In progress / In review / Done の 5 つ並ぶことを確認する
+
+- [ ] **1-2. 組み込み自動化を 4 本有効にする**
+  1. 右上の `…`（三点）→ **Workflows** を開く
+  2. 次の 4 本をそれぞれ開いて、トグルを On にする
+
+  | ワークフロー | 設定 | 何をするか |
+  | --- | --- | --- |
+  | `Auto-add to project` | リポジトリに `{{REPO}}`、フィルタに `is:issue,pr is:open` | 新しい issue と PR を Project に取り込む |
+  | `Item added to project` | Status → `Todo` | 取り込んだものを Todo に置く |
+  | `Issue closed` | Status → `Done` | 閉じた issue を Done に動かす |
+  | `Pull request merged` | Status → `Done` | マージした PR を Done に動かす |
+
+  `Auto-add to project` は GitHub Free で 1 本、Pro / Team で 5 本まで。
+  **有効にする前からある issue は拾わない**。それは `setup-github.sh` が `item-add` で入れている。
+
+- [ ] **1-3. 確認** — `{{REPO}}` にテスト用の issue を 1 本立て、Project のボードの Todo に出ることを見る。
+  出たらその issue は閉じる（Done に動くことも同時に確認できる）。
+
+---
+
+## 2. 土台づくり（ホスト側）
+
+bot を動かすホスト（このチームの設定は `{{BOT_HOST}}`）で行う。`local` は手元の Mac のこと。
+
+- [ ] **2-1. エージェントにサインインする**
+  ホストのターミナルで `claude` と `codex` をそれぞれ起動し、ブラウザ認証を済ませる。
+  承認モードが使えるもの（Claude Code / Codex）であることが前提。
+
+- [ ] **2-2. Orca CLI を登録する**
+  Orca の **Settings → General → Orca CLI** で登録する。登録できたか確認:
+
+  ```bash
+  orca status
+  ```
+
+  `appRunning: true` と `runtimeState: ready` が出れば通っている。
+
+- [ ] **2-3. スキルを入れる**
+
+  ```bash
+  orca skills install --skill orca-cli --skill orchestration
+  ```
+
+- [ ] **2-4. 常駐させてペアリングする（ホストが `local` 以外のときだけ。このチームは `{{BOT_HOST}}`）**
+  ホスト側で `orca serve service install`、手元で `orca environment add --pairing-code <コード>`。
+  `local` のまま進める場合は飛ばしてよい。ただし**ノートがスリープしている間 bot は動かない**。
+  GitHub からの依頼は最大 1 日待たされる。
+
+- [ ] **2-5. GitHub を接続する**
+  bot を 1 体作ったあと（段階 3 の最初の bot で）、その bot のチャットで `orca bot connectors` を実行し、
+  GitHub が signed in になっているか見る。なっていなければ画面の指示に従って
+  Orca アプリを `{{REPO}}` にインストールする（組織のリポジトリではオーナーの承認が要ることがある）。
+
+- [ ] **2-6. 試験 bot で疎通を見る**
+  適当な名前の bot を 1 体作り、`{{REPO}}` の issue でその bot をメンションして、応答が返るか見る。
+  返ったら、その試験 bot は消してよい。
+
+**次へ進む条件**: 試験 bot が GitHub の issue でのメンションに応答する。
+
+---
+
+## 3. 読むだけの 3 体と PMO
+
+Reviewer → CI Guardian → Intake の順に 1 体ずつ作る。3 体とも指摘や一覧を出すだけで、
+コードも issue も触らない。1 体目で手順を覚えてから残りを流す。
+
+**PMO は全チームで 1 体。** このチームが最初のチームなら、PMO も 3-1・3-2 の手順で名前 `PMO` で作る
+（指示文は `{{TEMPLATE_DIR}}/shared/pmo.md.tmpl`）。既に PMO がいるなら作らない。どちらの場合も最後に
+
+```bash
+{{TEMPLATE_DIR}}/scripts/render-pmo.sh --install {{CONFIG_DIR}}/team.*.config
+```
+
+を流すと、PMO の SOUL.md に全チームの表が入り、PMO の自動化 3 本と事前許可の設定が入る。
+
+各 bot について 3-1 〜 3-5 を繰り返す。
+
+| bot | テンプレート | 指示文 | ルーム |
+| --- | --- | --- | --- |
+| `{{NAME_REVIEWER}}` | Pull request review | `reviewer.md` | {{ROOM_DEV}} |
+| `{{NAME_CI_GUARDIAN}}` | CI failures | `ci-guardian.md` | {{ROOM_DEV}} |
+| `{{NAME_INTAKE}}` | GitHub issue triage | `intake.md` | {{ROOM_DEV}} |
+
+- [ ] **3-1. bot を作る**
+  1. Orca の **Bots** → `+` → **New bot** → **Browse templates**
+  2. 上の表のテンプレートを選ぶ
+  3. 名前を節 0 の表の「画面で入れる名前」のとおりに入れる（変えると `@` の呼び名・フォルダ名・自動化がずれる）
+  4. **実行先（Where it runs）** を `{{BOT_HOST}}` にする
+  5. **エージェント** を選ぶ。承認モードがあるもの（claude / codex）
+  6. Identity 欄（Who it is and what it does）に、SOUL.md 本文の**最初の段落だけ**を入れる（200 字まで）
+  7. 作成する
+  8. 指示文を入れる（`SOUL.md` を本文の全文にし、末尾の `## Never` をチームの禁止事項にする）:
+
+     ```bash
+     {{TEMPLATE_DIR}}/scripts/install-souls.sh {{CONFIG_PATH}} <役割…>
+     ```
+
+- [ ] **3-2. 権限を決める**
+  bot の **Bot settings… → Agent → Permissions** を **Approve for me** にする。
+  外部の文章（issue 本文・PR 本文・CI ログ）を読む bot（全 11 体）は、公式では Ask for approval が推奨されている。
+  それをオーナーの判断（2026-11-23）で Approve for me にした（記録はテンプレートの `VERIFY.md`）。
+  確認が出る場面を Orca が代わりに審査して通すので、事前許可（3-4）に当たらない書き方のコマンドでも止まらない。
+  拒否リスト（`{{DEFAULT_BRANCH}}` への push・強制 push・ブランチ削除・`gh pr merge`）は、このモードでも bot 本人には効く。
+  ただしコマンドの形を照合するだけなので抜けがある（引数なしの `git push`、ref を完全名で書いた push、`gh api` 経由のマージ、
+  変数・パイプなどで包んだコマンド）。最後のものは拒否リストの照合に当たらず、人の確認ではなく Orca の審査に回る
+  （審査がそれを実際に通すかは未確認）。
+  ワーカーには効かない。**補助であって保証ではない**（末尾の「権限とガバナンス」）。
+  - これは**新しい会話の初期値**。進行中の会話は、チャット欄の Permissions で個別に切り替える
+  - 作成フォームの Agent → Permissions でも Approve for me を選べる（2026-11-24 に Planner で確認。以前は Bot settings からだけだった）
+  - 新しい bot の既定は Full access。そのままにしない
+
+- [ ] **3-3. Who can ask を確認する**
+  既定は自分だけ。そのままにする。人を足すと、その人の依頼も**あなたの権限**で動く。
+
+- [ ] **3-4. GitHub コネクタを付けて自動化を作る**
+  1. bot の右パネル **Connectors** → **Add a connector** → `GitHub` → **Add GitHub** → **Turn on <bot名>**
+     （GitHub の接続はアカウントで共有なのでサインインは出ない。PMO には付けない）
+  2. 全員分のコネクタを付けたら、ホストで次を 1 回流す（同じ名前の自動化は作らず、依頼文と precheck を今の版に合わせるので何度流してもよい）。
+     Intake の見回り（毎時 15 分、7〜23 時）もここで入る。precheck の `scripts/sweep.sh` が拾うものを見つけたときだけ起動する
+
+     ```bash
+     {{TEMPLATE_DIR}}/scripts/setup-automations.sh {{CONFIG_PATH}}
+     ```
+
+     コネクタが無い bot のイベント起動は `NG` と出る。コネクタを付けてから流し直す。
+     自動化は `{{ROOM_DEV}}` の中で動かす（`--runs-in chat:<その bot のルームの会話>`）。ルームに入る前の bot は「メンバーではない」と警告が出て
+     ルームの外で動く。ルームに入れたら流し直す（3-6・4-3・5-4・5-7・6-2）。
+
+  3. 読み取り・Run の中の操作・**ワーカーの起動・作業ブランチへの push・issue と PR の作成とコメント・Project の更新**を事前許可する設定を配る
+     （2026-11-23 にオーナーが判断）。Ask for approval のままだと、読み取りのたびに確認が出て止まる（試運転で確認済み）。
+     拒否するのは `{{DEFAULT_BRANCH}}` への push（`-C` 付きも）・強制 push・ブランチの削除・`gh pr merge`・`gh api` の書き込み
+     （`-X` / `--method` / mutation / merge）・PR の承認・リリース・リポジトリの設定と秘密・Orca の自動化の変更。
+     **判定の本体は PreToolUse フック（`scripts/bot-guard.py`）。** Approve for me は Claude Code の auto モードで、分類器が危ないと見た操作は
+     人の確認に回る。セットアップ時から続く会話は確認を出すモードのまま。bot のフォルダが未信頼だと許可リスト自体が無視される。
+     フックは権限モードと信頼に関係なく先に効き、禁じた操作は人に聞かずに断り（理由を bot に返す）、それ以外は確認なしで通す。
+     試すときは `python3 {{TEMPLATE_DIR}}/scripts/bot-guard.py --repo-path … --default-branch … --workspaces … --bot-dir … --check '<コマンド>'`。
+     これで bot 側に人の確認はほぼ残らない。ワーカーも Orca が確認なしで起動する。
+     歯止めは、タスク仕様の「変更してよい範囲」、この拒否リスト（補助）、そして **PR のマージを人が押すこと**。
+     ただし `enforce_admins` が Off だと、ワーカーが指示を外れて `{{DEFAULT_BRANCH}}` へ push する経路は GitHub 側でも止まらない。
+     変数・ループ・パイプを含むコマンドには事前許可も拒否も効かず、Approve for me（3-2）では人の確認ではなく
+     Orca の審査に回る（審査が通すかは未確認。共通ルールでこの書き方を禁じている）。
+
+     ```bash
+     {{TEMPLATE_DIR}}/scripts/install-bot-settings.sh {{CONFIG_PATH}}
+     ```
+
+
+- [ ] **3-5. スケジュールと Look around**
+  bot のパネルで
+  - 定時は 3-4 のスクリプトが作る（作成時点で On）。
+  - **Look around は作成時点で全 bot が On になっている。** PMO 以外は、Home → Automations → **Look around** →
+    スイッチを Off にする。
+    11 体すべてで回すと利用枠を大きく消費する。
+
+3 体（と PMO）ができたら:
+
+- [ ] **3-6. {{ROOM_DEV}} を作る**
+  **Bots** → `+` → **New bot or group** → ルーム名 `{{ROOM_DEV}}` →
+  メンバーに **`{{NAME_REVIEWER}}`・`{{NAME_CI_GUARDIAN}}`・`{{NAME_INTAKE}}`** を入れる。**PMO は入れない**（集約に専念させる）。
+  **ルームの会話の権限モードを Approve for me にする。** ルームの会話は bot ごとに 1 本で、作ったときの権限モード（既定は Ask for approval）のまま動く。
+  入力欄の下の **Replies** で bot を選び、**Permissions** を **Approve for me** にする。Permissions は Replies で選んだ bot の会話に効くので、
+  メンバーごとに繰り返す（終わったら Replies を元の bot に戻す）。Ask のままだと、ルームで道具を使うたびに確認で止まる（2026-11-25 に確認）。
+  そのあと `setup-automations.sh` を流し直し、自動化をルームの中に移す。
+
+- [ ] **3-7. 動くことを確認する**
+  1. 小さな PR を 1 本開く → Reviewer が起動し、結果と印（`orca-review: <SHA> result=…`）を PR のコメントと commit status（`orca/review`）に残す。
+     通れば Sentinel（段階 6 で入れたあと）がセキュリティレビューをし、`orca/security-review` を付ける
+  2. 指摘に誤りがあればチャットで直す → `~/.orca/bots/<reviewer>/MEMORY.md` に 1 行増える
+  3. テスト用の issue を立てる → 次の毎時 15 分の見回りで Intake が振り分ける（`triaged` と担当のラベル、{{ROOM_DEV}} で担当の bot に `@`）。
+     すぐ試すなら `@orca-bots {{P}}intake` とコメントする
+
+**次へ進む条件**: 指摘の質に納得でき、チャットで誤りを直すとメモリに反映されることを確認できた。
+
+---
+
+## 4. コードを変える 2 体（Fixer / Doc Keeper）
+
+**この段階の前に確かめること。** `{{RULES_DOC}}` の git 運用が
+「作業ブランチを切って push し、`{{DEFAULT_BRANCH}}` へは PR を作る。`{{DEFAULT_BRANCH}}` への直接 push は不可」
+になっていること。そうなっていないと、bot が毎回 push の許可を求めて止まる。
+`{{DEFAULT_BRANCH}}` のブランチ保護も入っていること（`setup-github.sh` を `--skip-protection` なしで流す）。
+ただし保護は管理者に効かないので、オーナー名義で動く bot の直接 push は止まらない（末尾の「権限とガバナンス」）。
+
+| bot | テンプレート | 指示文 |
+| --- | --- | --- |
+| Fixer | Bug investigation | `fixer.md` |
+| Doc Keeper | Docs upkeep | `doc-keeper.md` |
+
+- [ ] **4-1.** 2 体を 3-1 〜 3-4 と同じ手順で作る
+- [ ] **4-2.** Doc Keeper のスケジュール（水曜）を On にする。Look around は両方 Off
+- [ ] **4-3.** 2 体を {{ROOM_DEV}} のメンバーに足し、ルームの Permissions を 2 体とも Approve for me にする（3-6）。`setup-automations.sh` を流し直す
+- [ ] **4-4. 確認** — 小さな不具合の issue に `@orca-bots {{P}}fixer` とコメントする（自分で付けたラベルでは起動しない）。
+  Fixer が再現 → 原因 → 「修正を始めてよいか」の確認、の順に進むことを見る。
+  承認したら、PR が開いて Project の Status が In review に動くことを見る
+
+**次へ進む条件**: bot の PR が大きな手戻りなしに人のレビューを通る。
+
+---
+
+## 5. Conductor と Orchestration
+
+- [ ] **5-1. Orchestration が使えることを確かめる**
+  **Settings → Orchestration** で Orchestration skill が「Up to date」になっていること（実験的機能の切り替えは無くなった）。
+
+- [ ] **5-2. 上限を決める**
+  **Settings → Agent Orchestration** で
+  - heartbeat の間隔 — 既定のまま
+  - **入れ子の深さ — 最初は 1 か 2**。既定では深さ 4 まで補助ワーカーを生むので、
+    最初は浅くしておき、必要になったら戻す
+
+- [ ] **5-3. Conductor を作る**
+  テンプレート **Spec drafting**、指示文は `conductor.md`。3-1 〜 3-4 と同じ手順。
+  エージェントは **claude**（承認モードがあるもの）。
+
+- [ ] **5-4.** Conductor を {{ROOM_DEV}} のメンバーに足し、ルームの Permissions を Approve for me にする（3-6）。`setup-automations.sh` を流し直す
+
+- [ ] **5-5. 試運転する**
+  小さな機能要求の issue を 1 本立て、`@orca-bots {{P}}conductor` とコメントする。次の順に進むはず。
+  1. Conductor が仕様（目的・受け入れ条件・影響範囲）を issue にコメントする
+  2. モジュール分割を出して**設計承認を求めて止まる** → Orca の **Needs you** に届く
+  3. 承認すると Run を作り、TDD の段を 1 段ずつ進める（`conductor.md` の「TDD の段」）
+     1. テスト設計のワーカーが、受け入れ条件ごとのテスト ID を決めてエピックのブランチへ push する
+     2. RED のワーカーがテストだけを書き、失敗を確かめて `test(…) (RED)` を push する。Conductor が RED を確かめる
+     3. 実装のワーカー（並列）がテストを変えずに実装し、`feat(…) (GREEN)` を push する。Conductor が GREEN を確かめる
+     4. 統合のワーカーが取り込んで `{{CHECK_CMD}}` を通す
+     5. リファクタリングのワーカーが振る舞いとテストを変えずに整え、`refactor(…)` を push する。Conductor が REFACTOR を確かめる
+  4. クロスレビューのあと PR を作る（本文に受け入れ条件 → テスト ID → RED → GREEN → REFACTOR の対応表と ADR の一覧）
+  5. PR が開くと Conductor が {{ROOM_DEV}} で Reviewer に `@` で頼み、Reviewer が TDD の順の崩れと ADR の抜けも見て、結果と印を PR に残す
+  6. Reviewer が通すと Sentinel に頼み、Sentinel がワーカーで `security-review` を通し、このリポジトリの 5 つの観点でも見る。
+     通れば `orca/security-review` が success になり、Sentinel が人にマージを頼む（マージの**前**のセキュリティレビュー）
+
+- [ ] **5-6. ここで必ず確認すること**
+  - bot のセッションから `orca orchestration` が実行できたか。
+    **できなければこの段階は成立しない。** その場合は、人が Orca のターミナルで Run を回し、
+    Conductor は仕様化と報告だけに落とす（`conductor.md` の設定メモに書いてある）
+  - Approve for me（3-2）で、確認待ちに止まらずに進むか。止まるなら、事前許可（3-4）の範囲を見直す
+  - {{ROOM_DEV}} の `@` で相手の bot が起き、ルームで返事をするか。ルームから立てたワーカーの完了で、ルームの会話が起き直すか
+  - RED → GREEN → REFACTOR の順にコミットがあり、RED のあとテストのファイルが変わっていないか（`git log` と `git diff <RED> HEAD -- <テストのファイル>`）
+  - アーキテクチャの方針を決めた Run なら、`{{ADR_DIR}}/` に ADR が入っているか
+
+- [ ] **5-7. Planner を作る**（新しい要件の詳細化・実装計画・issue 化）
+  テンプレート **Spec drafting**、指示文は `planner.md`。3-1 〜 3-4 と同じ手順で、{{ROOM_DEV}} に足す（Permissions は Approve for me）。
+  ラベル `requirement`・`bot:planner` は `setup-github.sh`、自動化（計画 PR のマージ・close）は `setup-automations.sh` が作る。
+
+- [ ] **5-8. Planner を試運転する**
+  フォーム「要件・要望」で、エピックが 2 つ以上になりそうな粗い要件を 1 本立て、`@orca-bots {{P}}planner` とコメントする。次の順に進むはず。
+  1. Planner が引き受け、調査ワーカー（`req-<n>-research`）で仕様書とコードを調べ、Sentinel に脅威分析を頼む（要件の issue に `orca-threat:` のコメント）
+  2. 計画ワーカー（`req-<n>-plan`）が、要件書 `{{REQ_DIR}}/R-<n>.md` と仕様書の ID の追加を計画 PR にする（題名 `[{{NAME_PLANNER}}] R-<n>: …`）
+  3. Reviewer → Sentinel が通し、Sentinel が人にマージを頼む。**マージが要件と計画の承認**（論点は推奨どおりになる）
+  4. Planner が子 issue を立て、要件の issue の sub-issue にし、依存を blocked by で張って Intake に渡す
+  5. Intake が担当（Conductor / Fixer / Doc Keeper）に振り、依存が閉じたものから着手される。
+     Conductor は ADR の案・要件書からの逸脱・凍結済みテストへの影響が無ければ、設計の承認を求めずに Run を始める。
+     セキュリティに触れるエピックは、その前に Sentinel の設計のセキュリティレビュー（`orca-security-design:`）を受け、攻撃ケースをテスト設計に入れる
+  6. 子がすべて閉じると、見回りが拾って Planner が完了報告を書き、要件を閉じる
+
+**次へ進む条件**: 設計承認から統合 PR まで、人がターミナルに入らずに完了し、
+{{ROOM_DEV}} の `@` の受け渡しで Reviewer まで届き、指摘が Conductor に戻る。Planner の計画 PR のマージで子 issue が立ち、担当まで届く。
+
+---
+
+## 6. 出荷と運用の 3 体
+
+| bot | テンプレート | 指示文 |
+| --- | --- | --- |
+| Sentinel | Security check（＋ Dependency updates） | `sentinel.md` |
+| Release Captain | Release readiness（＋ Release notes・Deploy watch） | `release-captain.md` |
+| Ops Scribe | Incident notes（＋ On-call handoff） | `ops-scribe.md` |
+
+- [ ] **6-1.** 3 体を 3-1 〜 3-4 と同じ手順で作る
+- [ ] **6-2. {{ROOM_SHIP}} を作る** — **Bots** → `+` → **New bot or group** →
+  ルーム名 `{{ROOM_SHIP}}` → メンバーに 3 体（人が出荷の相談をする場）
+  3 体とも {{ROOM_DEV}} にも足す（Group settings… → Manage members）。受け渡しと自動化は {{ROOM_DEV}} で動き、`@` で渡せるのは同じルームの bot だけなので。
+  両方のルームで Permissions を 3 体とも Approve for me にし（3-6）、`setup-automations.sh` を流し直す
+- [ ] **6-3.** スケジュールを On にする（Release Captain の平日朝、Sentinel の月曜、Ops Scribe の金曜）。
+  Look around は 3 体とも Off
+- [ ] **6-4. Deploy watch の Webhook**（{{DEPLOY_KIND}}の仕組みがある場合だけ）
+  1. Release Captain の画面で Webhook の **URL と署名シークレット**を発行する
+  2. CI のシークレットに登録する
+  3. {{DEPLOY_KIND}}の最後にその URL を呼ぶ処理を足す（これは Claude Code に頼める）
+
+  **署名シークレットは必ず設定する。** URL を知っていれば誰でも起動できる。漏れたら Rotate key。
+  Webhook の本文は Orca Cloud に最大 7 日残るので、秘密を本文に入れない。
+
+**次へ進む条件**: 1 回のリリースで、準備リスト・ノート・デプロイ要約が人の手作業と一致する。
+
+---
+
+## 定時の時刻表（{{TZ_LABEL}}）
+
+同じ時刻に重ねると同じ利用枠を取り合うので、30 分ずつずらしてある。
+`scripts/setup-automations.sh` がこの時刻で自動化を作る。各 bot の依頼文と起動トリガーの欄も同じ時刻にしてある。変えるときは 3 か所を揃える。
+
+| 時刻 | bot | 内容 |
+| --- | --- | --- |
+| 平日 8:30 | Release Captain | 失敗 check・未レビュー PR・ブロッカーの一覧 |
+| 平日 9:00 | PMO | スタンドアップ、未レビューのエージェント作業 |
+| 月曜 9:30 | CI Guardian | flaky な check の一覧 |
+| 月曜 10:00 | Sentinel | 週次セキュリティ検査、依存更新の一覧 |
+| 水曜 10:00 | Doc Keeper | ドキュメントのずれ |
+| 金曜 15:00 | PMO | 週次ブリーフィング |
+| 金曜 16:00 | Ops Scribe / PMO | オンコール引き継ぎ、worktree の整理 |
+| 毎日 7〜23 時の毎時 15 分 | Intake | 見回り（未振り分けの issue、レビューの印が無い PR、セキュリティレビュー待ちの PR、止まっている担当（依存待ちは除く）、子 issue の無い要件、子がすべて閉じた要件）。拾うものがある時だけ起動 |
+
+---
+
+## 人が必ず判断する 4 点
+
+1. **設計の承認** — 新しい要件は Planner の計画 PR をマージする（要件と計画の承認。論点は推奨どおりになる。変えたいときは PR でメンション）。
+   エピックごとの承認は、Conductor が ADR の案・要件書からの逸脱・凍結済みテストへの影響のどれかを見つけたときだけ来る（ADR の案もここで承認する）
+2. **PR のマージとリリース** — 最新のコミットで Reviewer（`orca/review`）と Sentinel のセキュリティレビュー（`orca/security-review`）が
+   success になってから、人がマージする。2 つは `{{DEFAULT_BRANCH}}` の必須の check なので、付くまで GitHub のマージボタンが止まる
+   （`REQUIRED_CHECKS`。管理者は「要件を待たずにマージ」で押し切れるが、使うのは緊急時だけ）。
+   Update branch で `{{DEFAULT_BRANCH}}` を取り込むと SHA が変わり、2 つが付き直すまで待つ（取り込みだけなら Reviewer と Sentinel が結果を引き継ぐ。
+   見回りで最大 1 時間ほど。急ぐときは PR に `@orca-bots {{P}}reviewer` とコメントする）。頼んでくるのは Sentinel。出荷は Release Captain の一覧を見て決める
+3. **凍結済みテストの変更** — RED で入れたテストを変える必要が出たとき
+4. **依頼の範囲外の判断** — アーキテクチャの方針を途中で決める必要が出たときなど
+
+この 4 点以外は bot が進める。**着手は人に聞かない**（2026-11-23 から。Intake が振り分け、Fixer はそのまま直し、
+新しい要件は Planner の計画 PR のマージで止まる）。人を待っている issue・PR には `wait:human` ラベルが付く。
+逆に、この 4 点を bot に任せると歯止めが無くなる。
+
+---
+
+## 権限とガバナンス（外さないこと）
+
+- bot はすべて**あなたの権限**で動く。「`{{DEFAULT_BRANCH}}` に直接 push しない」「マージしない」は、bot 本人については
+  事前許可の拒否リスト（`_settings.json.tmpl`）で止めているが、**bot が起動したワーカーは確認なしで動くので、ワーカーについては指示であって保証ではない**。
+  `setup-github.sh` のブランチ保護は**管理者に効かない設定**（`enforce_admins: false`、承認 0 件）なので、
+  オーナー＝管理者の名義で動く bot の `git push origin {{DEFAULT_BRANCH}}` や `gh pr merge` を保護では止められない。
+  人の誤操作は防げるが、bot とワーカーに対する歯止めは指示と拒否リスト（形の照合なので抜けがある）だけ。
+  保護で bot も止めたいなら Include administrators（`enforce_admins`）を On にする。その場合、人も含めて PR 経由が強制される。
+  Off のままにするなら、ワーカーが無人で `{{DEFAULT_BRANCH}}` へ push しうることを受け入れた判断として記録に残す（例: テンプレートの `VERIFY.md` の「ブランチ保護の設計判断」）。
+- 新しい bot の既定は Full access。そのままにせず 3-2 のとおり Approve for me にする。
+  外部の文章を読む bot（全 11 体）は、公式では Ask for approval が推奨されている。
+  それをオーナーの判断で Approve for me にした（記録はテンプレートの `VERIFY.md`）。
+- Who can ask に人を足すと、その人の依頼もあなたの権限で動く。
+  「自分のキーボードを任せられる人」だけを足す。
+- **同じホストの bot は互いに分離されていない。** ある bot の実行が別の bot として振る舞えることが
+  報告されている（開発元は想定どおりの動作としている）。信頼度の違う bot・チームは別ホストに置く。
+- bot が読んだものはエージェントのモデル提供元へ送られる。Webhook の本文は Orca Cloud に最大 7 日残る。
+  社内規程と照らし合わせる。
+- 「メモリに秘密を保存しない」も指示のみ。`~/.orca/bots/*/MEMORY.md` を定期的に目で見る。
+- GitHub のコメント・レビュー・push・Project 更新は**すべてあなたの名義**で残る。
+  PR とコメントの冒頭に bot 名を入れる指示（`[Reviewer]` など）を外さない。
+
+---
+
+## 困ったときに見るところ
+
+| 症状 | 見るところ |
+| --- | --- |
+| bot が動かない | `orca status`（`appRunning` / `runtimeState`）。ホストがスリープしていないか |
+| GitHub のイベントで起動しない | その bot のチャットで `orca bot connectors`。Orca アプリが `{{REPO}}` に入っているか |
+| Project の Status が動かない | ホストの `gh auth status` に `project` スコープがあるか。無ければ `gh auth refresh -s project` |
+| bot 同士の受け渡しが止まる | {{ROOM_DEV}} で、渡した側の返事に `@<相手>` があり、その下に「<渡した側> asked <相手>」が出たか。相手が {{ROOM_DEV}} のメンバーか。ラベルだけでは相手は起きない |
+| ルームで bot が確認で止まる | Replies でその bot を選び、Permissions が Approve for me か（3-6） |
+| issue・PR が誰にも拾われない | `{{TEMPLATE_DIR}}/scripts/sweep.sh {{REPO}} --list`。Intake の見回りが On か（`orca automations runs`） |
+| PR に「Working…」が残ったまま | イベントの実行が記録されずに落ちている（Orca 側）。次の見回りで Reviewer に頼み直される |
+| PR がマージを頼まれないまま | `orca/review` と `orca/security-review` の状態。Reviewer が通したのに Sentinel の印が無ければ、見回りが Sentinel に頼み直す |
+| bot が「決めてください」で止まる | その bot の `SOUL.md` の末尾が Orca の既定の Never のままでないか。`install-souls.sh` で入れ直す |
+| 定時が走らない | bot のパネルでスケジュールが On か（テンプレートの既定はオフ） |
+| 利用枠が尽きる | Look around が PMO だけになっているか。定時が重なっていないか（上の時刻表） |
+| 指示文を直したい | テンプレートの `{{TEMPLATE_DIR}}/bots/<bot名>.md` を直して `render.sh` を流し、`install-souls.sh` で入れ直す |

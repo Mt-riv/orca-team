@@ -1,0 +1,36 @@
+name: インシデント
+description: 動いているものが壊れた・止まったことを記録する
+labels: ["{{LABEL_INCIDENT}}"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        このフォームで立てた issue は Ops Scribe が時系列を追記します。
+        秘密情報（トークン、鍵、応答本文、文字起こし）は書かないでください。
+  - type: input
+    id: started
+    attributes:
+      label: 気づいた時刻
+      description: 分まで（{{TZ_LABEL}}）
+    validations:
+      required: true
+  - type: textarea
+    id: impact
+    attributes:
+      label: 影響
+      description: 誰が何をできなくなっているか
+    validations:
+      required: true
+  - type: textarea
+    id: observed
+    attributes:
+      label: 観測した事実
+      description: 推測は分けて書いてください
+    validations:
+      required: true
+  - type: textarea
+    id: actions
+    attributes:
+      label: すでに実行した対応
+    validations:
+      required: false

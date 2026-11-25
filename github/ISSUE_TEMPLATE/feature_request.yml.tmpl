@@ -1,0 +1,57 @@
+name: 要件・要望
+description: 新しい機能や変更を頼む（粗い要望でよい。{{NAME_PLANNER}} が詳しくして計画にする）
+labels: ["requirement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        粗くて構いません。{{NAME_PLANNER}} が仕様書とコードを調べて、受け入れ条件・分割・論点（推奨つき）を計画 PR にまとめます。
+        計画 PR のマージが「要件と計画の承認」になり、そのあと分けた単位で issue が立ちます。
+        急ぐときは、立てたあとにこの issue で `@orca-bots {{P}}planner` とメンションしてください（しなければ 1 時間以内の見回りで拾います）。
+  - type: textarea
+    id: problem
+    attributes:
+      label: やりたいこと・解きたい問題
+      description: 何ができなくて困っているか、何ができるようになってほしいか
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: なぜ・誰が使うか
+      description: これができると何が良くなるか
+    validations:
+      required: false
+  - type: textarea
+    id: scenes
+    attributes:
+      label: 使う場面
+      description: 具体的な場面があれば（例「承認待ちのまま 5 分たったとき、ウォッチを見ていなくてもスマホで気づける」）
+    validations:
+      required: false
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: これができたら解決と言える条件（任意）
+      description: 書けなければ空で構いません（{{NAME_PLANNER}} が案を出します）
+      placeholder: |
+        - 
+    validations:
+      required: false
+  - type: textarea
+    id: scope
+    attributes:
+      label: やらないこと・制約
+      description: 含めない範囲、触ってほしくない場所、期限など
+    validations:
+      required: false
+  - type: dropdown
+    id: urgency
+    attributes:
+      label: 急ぎ度
+      options:
+        - 通常
+        - 急ぐ（いま困っている）
+        - 後回しでよい
+    validations:
+      required: false

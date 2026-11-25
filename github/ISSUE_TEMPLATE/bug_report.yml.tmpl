@@ -1,0 +1,54 @@
+name: バグ報告
+description: 動かない・壊れていることを報告する
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        トークン・API キー・ペアリングコード・プロンプト本文・応答本文は貼らないでください。
+        ログを貼るときは、それらを削ったうえで貼ってください。
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: 実際に起きたこと
+      description: 観測した事実だけを書いてください
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: 期待した動作
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: 再現手順
+      placeholder: |
+        1.
+        2.
+        3.
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: 版・コミット
+      description: 試した版、またはコミットの先頭 7 桁
+    validations:
+      required: false
+  - type: textarea
+    id: environment
+    attributes:
+      label: 環境
+      description: OS、端末、依存の版など
+    validations:
+      required: false
+  - type: textarea
+    id: logs
+    attributes:
+      label: ログ・出力
+      description: 秘密情報を削ってから貼ってください
+      render: text
+    validations:
+      required: false
