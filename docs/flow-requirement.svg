@@ -75,7 +75,7 @@
 <text x="365" y="240" class="sub" text-anchor="middle">引き受けて調べる</text>
 <rect x="506" y="267" width="178" height="50" rx="12" fill="rgba(156,201,180,.10)" stroke="#9CC9B4" stroke-width="1.4" stroke-dasharray="5 4"/>
 <text x="595" y="289" class="title" text-anchor="middle">調査</text>
-<text x="595" y="306" class="sub" text-anchor="middle">claude・読むだけ</text>
+<text x="595" y="306" class="sub" text-anchor="middle">読むだけ</text>
 <rect x="276" y="333" width="178" height="50" rx="12" fill="#2E3A57" stroke="#E9A0C8" stroke-width="2"/>
 <text x="365" y="355" class="title" text-anchor="middle">Sentinel</text>
 <text x="365" y="372" class="sub" text-anchor="middle">脅威分析・AC-S の案</text>
