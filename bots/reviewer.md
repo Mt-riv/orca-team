@@ -54,7 +54,7 @@
 
 ### `{{DEFAULT_BRANCH}}` を取り込んだだけのコミット（結果の引き継ぎ）
 
-`{{DEFAULT_BRANCH}}` の保護が「最新にしてからマージ」なので、ほかの PR がマージされるたびに、この PR にも `{{DEFAULT_BRANCH}}` を取り込むコミットができる。
+人が Update branch を押したときや、保護が「最新にしてからマージ」でほかの PR がマージされたときに、この PR に `{{DEFAULT_BRANCH}}` を取り込むコミットができる。
 次の 4 つがすべて当てはまるときだけ、差分を読み直さずに前の結果を新しい SHA に引き継いでよい（そのあとは下の「直すべき点の受け渡し」の 3 のとおり {{NAME_SENTINEL}} に渡す）。
 `git -C {{REPO_PATH}} fetch origin` のあと、
 1. 新しい head がマージコミットで、`git -C {{REPO_PATH}} show --no-patch --format=%P <新しい SHA>` の 1 つ目の親が、前に レビューを通した SHA（印が `result=ok`）である

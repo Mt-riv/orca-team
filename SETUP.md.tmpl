@@ -414,7 +414,9 @@ Reviewer → CI Guardian → Intake の順に 1 体ずつ作る。3 体とも指
 2. **PR のマージとリリース** — 最新のコミットで Reviewer（`orca/review`）と Sentinel のセキュリティレビュー（`orca/security-review`）が
    success になってから、人がマージする。2 つは `{{DEFAULT_BRANCH}}` の必須の check なので、付くまで GitHub のマージボタンが止まる
    （`REQUIRED_CHECKS`。管理者は「要件を待たずにマージ」で押し切れるが、使うのは緊急時だけ）。
-   Update branch で `{{DEFAULT_BRANCH}}` を取り込むと SHA が変わり、2 つが付き直すまで待つ（取り込みだけなら Reviewer と Sentinel が結果を引き継ぐ。
+   ほかの PR が先にマージされても、マージボタンが押せるなら Update branch は押さない（`REQUIRE_UP_TO_DATE=0` なら「最新にしてからマージ」は入っていない。
+   `{{DEFAULT_BRANCH}}` との組み合わせは、マージの後に `{{DEFAULT_BRANCH}}` の CI が確かめる）。
+   押すと SHA が変わり、2 つが付き直すまで待つ（取り込みだけなら Reviewer と Sentinel が結果を引き継ぐ。
    見回りで最大 1 時間ほど。急ぐときは PR に `@orca-bots {{P}}reviewer` とコメントする）。頼んでくるのは Sentinel。出荷は Release Captain の一覧を見て決める
 3. **凍結済みテストの変更** — RED で入れたテストを変える必要が出たとき
 4. **依頼の範囲外の判断** — アーキテクチャの方針を途中で決める必要が出たときなど

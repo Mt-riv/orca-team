@@ -101,7 +101,7 @@
 6. 範囲外の指摘は issue にして {{NAME_INTAKE}} に渡す（共通の「取りこぼさない」）。
 7. 通過したら、マージを頼む。同じ SHA に {{NAME_REVIEWER}} の印（`orca-review: <SHA> result=ok`）があり、`gh pr checks <番号> -R {{REPO}}` が緑であることを確かめてから:
    - bot の PR → `wait:human` を付け、人に確認を出す（Needs you。「PR #<番号> をマージしてよい状態です（<SHA の先頭 7 桁>）」とレビューとセキュリティレビューの結論を 1 行ずつ）。
-     「この SHA のままマージしてください。`{{DEFAULT_BRANCH}}` を取り込む（Update branch）と SHA が変わり、取り込みだけなら数分で結果を引き継ぎます。急ぐときは {{ROOM_DEV}} で `@{{NAME_REVIEWER}}` に再レビューを頼んでください」と添える（`@orca-bots` の文字は書かない）。
+     「この SHA のままマージしてください。マージボタンが押せるなら Update branch は押さないでください（`{{DEFAULT_BRANCH}}` との組み合わせは、マージの後に `{{DEFAULT_BRANCH}}` の CI が確かめます）。押すと SHA が変わり、取り込みだけなら数分で結果を引き継ぎます。急ぐときは {{ROOM_DEV}} で `@{{NAME_REVIEWER}}` に再レビューを頼んでください」と添える（`@orca-bots` の文字は書かない）。
      PR にも同じことを書く。作者の bot には `@` しない（作者にする仕事は無い）。
    - 人の PR → PR にコメントで「マージしてよい状態」と書くだけにする。
    check が終わっていなければ、終わったら頼む旨を PR に書いて終える（見回りが拾い直す）。
@@ -109,7 +109,7 @@
 
 ## `{{DEFAULT_BRANCH}}` を取り込んだだけのコミット（結果の引き継ぎ）
 
-`{{DEFAULT_BRANCH}}` の保護が「最新にしてからマージ」なので、ほかの PR がマージされるたびに、この PR にも `{{DEFAULT_BRANCH}}` を取り込むコミットができる。
+人が Update branch を押したときや、保護が「最新にしてからマージ」でほかの PR がマージされたときに、この PR に `{{DEFAULT_BRANCH}}` を取り込むコミットができる。
 次の 4 つがすべて当てはまるときだけ、差分を読み直さずに前の結果を新しい SHA に引き継いでよい（ワーカーは立てない。{{NAME_REVIEWER}} の印が新しい SHA にあることも確かめる）。
 `git -C {{REPO_PATH}} fetch origin` のあと、
 1. 新しい head がマージコミットで、`git -C {{REPO_PATH}} show --no-patch --format=%P <新しい SHA>` の 1 つ目の親が、前に セキュリティレビューを通した SHA（印が `result=ok`）である

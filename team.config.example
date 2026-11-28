@@ -56,3 +56,10 @@ BOT_HOST='local'                          # local | <orca host 名>
 # 保護は enforce_admins: false（管理者には効かない）。bot はオーナー＝管理者名義なので、bot の直接 push は保護では止まらない。
 REQUIRED_APPROVALS=0
 REQUIRED_CHECKS='orca/review,orca/security-review'   # カンマ区切り。CI のジョブも足す（例 'check / build,orca/review,orca/security-review'）。orca/ の 2 つは Reviewer と Sentinel の関門で、外すとレビューを経ないマージを GitHub が止めない。Sentinel を入れる前（SETUP.md の段階 6 より前）は orca/security-review を外しておき、入れたら足して setup-github.sh を流し直す（外さないと、それまでの PR がマージできない）
+# 「最新にしてからマージ」（GitHub の strict）。0 = 外す（既定）/ 1 = 入れる。
+# 入れると、どれか 1 本がマージされるたびに、開いている PR すべてで Update branch が要る。SHA が変わるので、
+# Reviewer と Sentinel の印が付き直すまでマージできない（取り込みだけなら引き継ぐが、そのたびに 2 体が動く）。
+# 外しても、PR の head で必須の check は要る。既定ブランチとの組み合わせは、マージの後に既定ブランチの CI が確かめる
+# （CI のワークフローを既定ブランチへの push でも流しておく。落ちたら CI Guardian が issue にする）。
+# 1 にするのは、既定ブランチへの push がそのまま本番に出るとき、同じところを触る PR が同時に何本も開くとき、外部の人の PR を受けるとき。
+REQUIRE_UP_TO_DATE=0
