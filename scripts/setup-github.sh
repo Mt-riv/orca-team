@@ -15,6 +15,8 @@ OWNER=${REPO%%/*}
 DEFAULT_BRANCH=${DEFAULT_BRANCH:-main}
 REQUIRED_APPROVALS=${REQUIRED_APPROVALS:-0}
 REQUIRED_CHECKS=${REQUIRED_CHECKS:-}
+REQUIRE_UP_TO_DATE=${REQUIRE_UP_TO_DATE:-0}
+case "$REQUIRE_UP_TO_DATE" in 0|1) ;; *) echo "REQUIRE_UP_TO_DATE は 0 か 1: $REQUIRE_UP_TO_DATE" >&2; exit 1 ;; esac
 
 echo "== ラベル =="
 while IFS=$'\t' read -r name color desc; do
@@ -135,7 +137,8 @@ checks_json='null'
 if [ -n "$REQUIRED_CHECKS" ]; then
   # orca/ で始まるものは bot が gh api で付ける commit status（GitHub App ではない）なので app_id -1（どこから付いてもよい）。
   # ほかは app_id を省く（GitHub が直近に付けた App を選ぶ）
-  checks_json=$(CH="$REQUIRED_CHECKS" python3 -c 'import json,os;cs=[c.strip() for c in os.environ["CH"].split(",") if c.strip()];print(json.dumps({"strict":True,"checks":[dict(context=c,app_id=-1) if c.startswith("orca/") else dict(context=c) for c in cs]}))')
+  # strict（最新にしてからマージ）は REQUIRE_UP_TO_DATE=1 のときだけ入れる（team.config.example）
+  checks_json=$(CH="$REQUIRED_CHECKS" U="$REQUIRE_UP_TO_DATE" python3 -c 'import json,os;cs=[c.strip() for c in os.environ["CH"].split(",") if c.strip()];print(json.dumps({"strict":os.environ["U"]=="1","checks":[dict(context=c,app_id=-1) if c.startswith("orca/") else dict(context=c) for c in cs]}))')
 fi
 body=$(A="$REQUIRED_APPROVALS" C="$checks_json" python3 - <<'PY'
 import json, os
@@ -155,7 +158,7 @@ print(json.dumps({
 PY
 )
 printf '%s' "$body" | gh api -X PUT "repos/$REPO/branches/$DEFAULT_BRANCH/protection" --input - >/dev/null \
-  && echo "  設定した（PR 必須 / 強制 push 禁止 / 削除禁止 / 会話の解決必須 / 承認 $REQUIRED_APPROVALS 件）" \
+  && echo "  設定した（PR 必須 / 強制 push 禁止 / 削除禁止 / 会話の解決必須 / 承認 $REQUIRED_APPROVALS 件 / 最新にしてからマージ $([ "$REQUIRE_UP_TO_DATE" = 1 ] && echo 入れる || echo 外す)）" \
   || echo "  失敗（非公開リポジトリのブランチ保護は有料プランが必要。画面で確認する）"
 
 echo

@@ -103,7 +103,9 @@ scripts/render-pmo.sh --install ~/orca-teams/team.*.config
 - 計画 PR で承認したエピックは、Conductor が次の 3 つのどれかに当たるときだけ設計の承認を求める（2026-11-24 オーナー判断）。
   ADR の案、要件書からの逸脱、凍結済みテストへの影響。
 - **Sentinel（セキュリティ担当）は 3 か所で入る**（2026-11-24 オーナー指示）。要件（計画 PR の前の脅威分析）、設計（セキュリティに触れるエピックの Run の前）、マージ前（すべての PR）。
-  main を取り込んだだけのコミット（Update branch）は、衝突の手直しが無ければ Reviewer と Sentinel が前の結果を引き継ぐ（見回りは待たずに拾う）。
+  main の保護は既定で「最新にしてからマージ」を外す（`REQUIRE_UP_TO_DATE=0`。2026-11-28 オーナー判断）。ほかの PR が先にマージされても Update branch は要らず、
+  head に付いた 2 つの印がそのまま効く。main との組み合わせは、マージの後に main の CI が確かめる（1 にする場合は `team.config.example` のコメント）。
+  main を取り込んだだけのコミット（人が Update branch を押したとき）は、衝突の手直しが無ければ Reviewer と Sentinel が前の結果を引き継ぐ（見回りは待たずに拾う）。
 - E 番号は Conductor が着手するときに振る。子 issue は仮 ID `R-<要件の番号>-<a, b…>`。
 - 計画 PR のマージは GitHub のイベントで Planner を起こす。取りこぼしは見回りが拾う（計画 PR がマージ済みで子が無い要件、子がすべて閉じた要件）。
 - 要件書の雛形は `shared/requirement-template.md`（`render.sh` が `<REQ_DIR>/0000-template.md` として置く。`REQ_DIR` の既定は `docs/requirements`）。
